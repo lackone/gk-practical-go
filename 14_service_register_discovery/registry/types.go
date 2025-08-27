@@ -15,8 +15,9 @@ type Registry interface {
 }
 
 type ServiceInstance struct {
-	Name string
-	Addr string
+	Name   string
+	Addr   string
+	Weight uint32 //权重
 }
 
 type Event struct {

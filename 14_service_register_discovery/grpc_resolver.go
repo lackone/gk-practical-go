@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gk-practical-go/14_service_register_discovery/registry"
+	"google.golang.org/grpc/attributes"
 	"google.golang.org/grpc/resolver"
 	"time"
 )
@@ -79,7 +80,11 @@ func (r *GrpcResolver) resolve() {
 	}
 	address := make([]resolver.Address, 0, len(instances))
 	for _, instance := range instances {
-		address = append(address, resolver.Address{Addr: instance.Addr, ServerName: instance.Name})
+		address = append(address, resolver.Address{
+			Addr:       instance.Addr,
+			ServerName: instance.Name,
+			Attributes: attributes.New("weight", instance.Weight),
+		})
 	}
 	fmt.Println(address)
 	err = r.cc.UpdateState(resolver.State{Addresses: address})

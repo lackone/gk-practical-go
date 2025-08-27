@@ -14,6 +14,8 @@ type Server struct {
 	registerTimeout time.Duration
 	*grpc.Server
 	ls net.Listener
+
+	weight uint32 //权重
 }
 
 type ServerOption func(*Server)
@@ -38,6 +40,12 @@ func WithRegistry(reg registry.Registry) ServerOption {
 	}
 }
 
+func WithWeight(weight uint32) ServerOption {
+	return func(s *Server) {
+		s.weight = weight
+	}
+}
+
 func (s *Server) Start(addr string) error {
 	ls, err := net.Listen("tcp", addr)
 	if err != nil {
@@ -50,8 +58,9 @@ func (s *Server) Start(addr string) error {
 		ctx, cancel := context.WithTimeout(context.Background(), s.registerTimeout)
 		defer cancel()
 		err := s.registry.Register(ctx, registry.ServiceInstance{
-			Name: s.name,
-			Addr: ls.Addr().String(),
+			Name:   s.name,
+			Addr:   ls.Addr().String(),
+			Weight: s.weight,
 		})
 		if err != nil {
 			return err
